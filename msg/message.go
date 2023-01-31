@@ -97,6 +97,24 @@ func NewCommand(code int, data []byte) *Command {
 	return c
 }
 
+func NewDoubleCommand(code int, size int) *Command {
+	c := &Command{code: uint32(code)}
+	c.header[2] = uint32(size)
+	return c
+}
+
+func (c *Command) GetCode() int {
+	return int(c.code)
+}
+
+func (c *Command) GetSize() int {
+	return int(c.header[2])
+}
+
+func (c *Command) GetBody() []byte {
+	return c.body
+}
+
 func (c *Command) ToByte() []byte {
 	res := make([]byte, len(magic)+4*9+len(c.body))
 	copy(res, magic)
