@@ -1,4 +1,4 @@
-package main
+package msg
 
 import (
 	"encoding/binary"
@@ -6,42 +6,42 @@ import (
 )
 
 const (
-	heartbeat    = 1
-	startstream  = 2 // stream
-	stopstream   = 3 // stream
-	settime      = 4
-	gettime      = 5
-	getrecplan   = 6
-	getreclist   = 8
-	startreplay  = 9  // stream
-	stopreplay   = 16 // stream
-	setrecplan   = 17
-	getfile      = 18 // stream
-	takepic      = 19
-	delfile      = 20
-	reformatsd   = 21
-	setwifiname  = 22
-	setwifipass  = 23
-	setwifichan  = 24
-	restartwifi  = 25
-	setwifidefs  = 32
-	getcamflip   = 33
-	setcamflip   = 34
-	getbaudrate  = 35
-	setbaudrate  = 36
-	getconfig    = 37
-	setconfig    = 38
-	getpiclist   = 39
-	get1080p     = 40
-	set1080p     = 41
-	getpiclist2  = 42
-	takepic2     = 43
-	getrectime   = 48
-	setrectime   = 49
-	retstream    = 257
-	retreplay    = 259
-	retreplayend = 261
-	retgetfile   = 262
+	CmdHeartbeat    = 1
+	CmdStartstream  = 2 // stream
+	CmdStopstream   = 3 // stream
+	CmdSettime      = 4
+	CmdGettime      = 5
+	CmdGetrecplan   = 6
+	CmdGetreclist   = 8
+	CmdStartreplay  = 9  // stream
+	CmdStopreplay   = 16 // stream
+	CmdSetrecplan   = 17
+	CmdGetfile      = 18 // stream
+	CmdTakepic      = 19
+	CmdDelfile      = 20
+	CmdReformatsd   = 21
+	CmdSetwifiname  = 22
+	CmdSetwifipass  = 23
+	CmdSetwifichan  = 24
+	CmdRestartwifi  = 25
+	CmdSetwifidefs  = 32
+	CmdGetcamflip   = 33
+	CmdSetcamflip   = 34
+	CmdGetbaudrate  = 35
+	CmdSetbaudrate  = 36
+	CmdGetconfig    = 37
+	CmdSetconfig    = 38
+	CmdGetpiclist   = 39
+	CmdGet1080p     = 40
+	CmdSet1080p     = 41
+	CmdGetpiclist2  = 42
+	CmdTakepic2     = 43
+	CmdGetrectime   = 48
+	CmdSetrectime   = 49
+	CmdRetstream    = 257
+	CmdRetreplay    = 259
+	CmdRetreplayend = 261
+	CmdRetgetfile   = 262
 )
 
 var msg2text = map[uint32]string{

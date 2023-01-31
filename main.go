@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	"github.com/kdudkov/lwdrone/msg"
 )
 
 type Lwdrone struct {
@@ -22,14 +24,14 @@ func NewDrone() *Lwdrone {
 	}
 }
 
-func (l *Lwdrone) GetConfig() (c *Config, err error) {
+func (l *Lwdrone) GetConfig() (c *msg.Config, err error) {
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", l.host, l.cmdPort), l.timeout)
 
 	if err != nil {
 		return
 	}
 
-	cmd := NewCommand(getconfig, nil)
+	cmd := msg.NewCommand(msg.CmdGetconfig, nil)
 
 	_, err = conn.Write(cmd.ToByte())
 	if err != nil {
@@ -43,7 +45,7 @@ func (l *Lwdrone) GetConfig() (c *Config, err error) {
 		return
 	}
 
-	_, err = FromByte(buf[:n])
+	_, err = msg.FromByte(buf[:n])
 	if err != nil {
 		return
 	}
@@ -53,7 +55,7 @@ func (l *Lwdrone) GetConfig() (c *Config, err error) {
 		return
 	}
 
-	c, err = ConfigFromBytes(buf[:n])
+	c, err = msg.ConfigFromBytes(buf[:n])
 	return
 }
 
@@ -62,8 +64,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("version: %s\n", c.version)
-	fmt.Printf("flash mounted: %d\n", c.sdcMounted)
-	fmt.Printf("flash size: %d MiB\n", c.sdcSize/1024/1024)
-	fmt.Printf("flash free: %d MiB (%.d%%)\n", c.sdcFree/1024/1024, 100.*c.sdcFree/c.sdcSize)
+	fmt.Printf("version: %s\n", c.Version)
+	fmt.Printf("flash mounted: %d\n", c.SdcMounted)
+	fmt.Printf("flash size: %d MiB\n", c.SdcSize/1024/1024)
+	fmt.Printf("flash free: %d MiB (%.d%%)\n", c.SdcFree/1024/1024, 100.*c.SdcFree/c.SdcSize)
 }
