@@ -84,6 +84,7 @@ var msg2text = map[uint32]string{
 }
 
 var magic = []byte("lewei_cmd\x00")
+var hdrLen = len(magic) + 9*4
 
 type Command struct {
 	code   uint32
@@ -97,10 +98,28 @@ func NewCommand(code int, data []byte) *Command {
 	return c
 }
 
-func NewDoubleCommand(code int, size int) *Command {
-	c := &Command{code: uint32(code)}
-	c.header[2] = uint32(size)
-	return c
+func (c *Command) SetArg(arg int) {
+	c.header[0] = uint32(arg)
+}
+
+func (c *Command) GetArg() int {
+	return int(c.header[0])
+}
+
+func (c *Command) GetStreamType() int32 {
+	return int32(c.header[3])
+}
+
+func (c *Command) SetStreamType(st int) {
+	c.header[3] = uint32(st)
+}
+
+func (c *Command) GetDec1() int32 {
+	return int32(c.header[4])
+}
+
+func (c *Command) GetDec2() int32 {
+	return int32(c.header[5])
 }
 
 func (c *Command) GetCode() int {
@@ -116,14 +135,14 @@ func (c *Command) GetBody() []byte {
 }
 
 func (c *Command) ToByte() []byte {
-	res := make([]byte, len(magic)+4*9+len(c.body))
+	res := make([]byte, hdrLen+len(c.body))
 	copy(res, magic)
 	le := binary.LittleEndian
 	le.PutUint32(res[len(magic):], c.code)
 	for i, v := range c.header {
 		le.PutUint32(res[len(magic)+4+i*4:], v)
 	}
-	copy(res[len(magic)+4*9:], c.body)
+	copy(res[hdrLen:], c.body)
 
 	return res
 }
@@ -142,8 +161,8 @@ func FromByte(data []byte) (*Command, error) {
 		c.header[i] = le.Uint32(data[len(magic)+(i+1)*4:])
 	}
 
-	c.body = make([]byte, len(data)-len(magic)-4*9)
-	copy(c.body, data[len(magic)+4*9:])
+	c.body = make([]byte, len(data)-hdrLen)
+	copy(c.body, data[hdrLen:])
 
 	return c, nil
 }

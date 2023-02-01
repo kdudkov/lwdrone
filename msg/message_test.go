@@ -62,7 +62,7 @@ func Test4(t *testing.T) {
 
 	for i, b := range msg1 {
 		if msg2[i] != b {
-			t.Error()
+			t.Errorf("pos %d %d != %d", i, b, msg2[i])
 		}
 	}
 }
