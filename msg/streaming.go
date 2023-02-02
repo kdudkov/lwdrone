@@ -1,9 +1,9 @@
 package msg
 
 import (
+	"bufio"
 	"encoding/binary"
 	"fmt"
-	"io"
 	"net"
 	"time"
 )
@@ -62,6 +62,8 @@ func StartStreamer(host string, port int, cmd *Command) (*Streamer, error) {
 
 	if err == nil {
 		go s.start(cmd)
+	} else {
+		close(s.ch)
 	}
 	return s, err
 }
@@ -70,57 +72,41 @@ func (s *Streamer) Stop() {
 
 }
 
-func (s *Streamer) start(cmd *Command) {
+func (s *Streamer) start(startCmd *Command) {
 	hbCmd := NewCommand(CmdHeartbeat, nil).ToByte()
+
+	reader := bufio.NewReader(s.conn)
+	writer := bufio.NewWriter(s.conn)
 
 	lastHb := time.Now()
 	buf := make([]byte, hdrLen)
 
-	s.conn.Write(cmd.ToByte())
+	writer.Write(startCmd.ToByte())
 
 	for {
-		_, err := io.ReadFull(s.conn, buf)
+		cmd, err := ReadFrameWithBuf(reader, buf)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
-		cmdOut, err := FromByte(buf)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		var dataBuf []byte
-
-		if cmdOut.GetSize() > 0 {
-			dataBuf = make([]byte, cmdOut.GetSize())
-			_, err := io.ReadFull(s.conn, dataBuf)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
-
-		if cmdOut.GetCode() == CmdHeartbeat {
+		if cmd.GetCode() == CmdHeartbeat {
 			continue
 		}
 
-		if cmdOut.GetCode() == CmdRetreplayend {
+		if cmd.GetCode() == CmdRetreplayend {
 			return
 		}
 
-		if len(dataBuf) == 0 {
+		if len(cmd.body) == 0 {
 			return
 		}
 
-		fu := NewUnmunger(cmdOut.GetStreamType(), cmdOut.GetDec1(), cmdOut.GetDec2())
+		fu := NewUnmunger(cmd.GetStreamType(), cmd.GetDec1(), cmd.GetDec2())
 
-		s.ch <- NewVideoFrame(fu, dataBuf)
+		s.ch <- NewVideoFrame(fu, cmd.body)
 		if time.Now().Sub(lastHb) > time.Second {
 			lastHb = time.Now()
-			s.conn.Write(hbCmd)
+			writer.Write(hbCmd)
 		}
 	}
-
 }

@@ -3,7 +3,6 @@ package msg
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"time"
@@ -43,28 +42,8 @@ func (l *Lwdrone) sendCommand(cmd *Command) (*Command, error) {
 	}
 
 	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
-	buf := make([]byte, hdrLen)
 
-	_, err = io.ReadFull(conn, buf)
-	if err != nil {
-		return nil, err
-	}
-
-	cout, err := FromByte(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	if cout.GetSize() > 0 {
-		cout.body = make([]byte, cout.GetSize())
-		_, err := io.ReadFull(conn, cout.body)
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return cout, nil
+	return ReadFrame(conn)
 }
 
 func (l *Lwdrone) GetConfig() (*Config, error) {

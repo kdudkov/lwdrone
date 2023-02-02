@@ -22,7 +22,7 @@ type Config struct {
 
 func ConfigFromBytes(data []byte) (*Config, error) {
 	if len(data) != 140 {
-		return nil, fmt.Errorf("invalid len: %d (must be 140)", len(data))
+		return nil, fmt.Errorf("invalid config data len: %d (must be 140)", len(data))
 	}
 
 	le := binary.LittleEndian
