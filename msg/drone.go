@@ -10,6 +10,13 @@ import (
 
 const delta = -time.Hour * 5
 
+const (
+	CamUp = iota
+	CamUpMirror
+	CamDownMirror
+	CamDown
+)
+
 type Lwdrone struct {
 	host       string
 	cmdPort    int
@@ -128,6 +135,31 @@ func (l *Lwdrone) SetTime() error {
 		return fmt.Errorf("arg")
 	}
 	return nil
+}
+
+func (l *Lwdrone) SetCamFlip(cam int) error {
+	cmd := NewCommand(CmdSetcamflip, nil)
+	cmd.SetArg(cam)
+	res, err := l.sendCommand(cmd)
+	if err != nil {
+		return err
+	}
+	if res.GetArg() != 0 {
+		return fmt.Errorf("arg")
+	}
+	return nil
+}
+
+func (l *Lwdrone) GetCamFlip(cam int) (int, error) {
+	cmd := NewCommand(CmdGetcamflip, nil)
+	res, err := l.sendCommand(cmd)
+	if err != nil {
+		return 0, err
+	}
+	if res.GetArg() != 0 {
+		return 0, fmt.Errorf("arg")
+	}
+	return res.GetArg(), nil
 }
 
 func (l *Lwdrone) StartStream(hires bool, fl *os.File) error {

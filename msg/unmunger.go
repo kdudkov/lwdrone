@@ -15,7 +15,6 @@ type VideoFrameUnmunger struct {
 }
 
 func NewUnmunger(stream_type int32, key1, key2 int32) *VideoFrameUnmunger {
-
 	return &VideoFrameUnmunger{
 		typ: stream_type,
 		a:   int16(key1 & 0xffff),
