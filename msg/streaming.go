@@ -46,13 +46,14 @@ type Streamer struct {
 	connTimeout time.Duration
 	ch          chan *VideoFrame
 	conn        net.Conn
+	frames      int64
 }
 
 func StartStreamer(host string, port int, cmd *Command) (*Streamer, error) {
 	s := &Streamer{
 		host:        host,
 		port:        port,
-		connTimeout: time.Second * 15,
+		connTimeout: time.Second * 5,
 		ch:          make(chan *VideoFrame, 100),
 	}
 
@@ -78,10 +79,16 @@ func (s *Streamer) start(startCmd *Command) {
 	reader := bufio.NewReader(s.conn)
 	writer := bufio.NewWriter(s.conn)
 
+	defer close(s.ch)
+
 	lastHb := time.Now()
 	buf := make([]byte, hdrLen)
 
-	writer.Write(startCmd.ToByte())
+	_, err := writer.Write(startCmd.ToByte())
+	if err != nil {
+		println(err)
+		return
+	}
 
 	for {
 		cmd, err := ReadFrameWithBuf(reader, buf)
@@ -103,6 +110,7 @@ func (s *Streamer) start(startCmd *Command) {
 
 		fu := NewUnmunger(cmd.GetStreamType(), cmd.GetDec1(), cmd.GetDec2())
 
+		s.frames++
 		s.ch <- NewVideoFrame(fu, cmd.body)
 		if time.Now().Sub(lastHb) > time.Second {
 			lastHb = time.Now()

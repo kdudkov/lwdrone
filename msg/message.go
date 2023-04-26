@@ -122,8 +122,8 @@ func (c *Command) GetDec2() int32 {
 	return int32(c.header[5])
 }
 
-func (c *Command) GetCode() int {
-	return int(c.code)
+func (c *Command) GetCode() uint32 {
+	return c.code
 }
 
 func (c *Command) GetSize() int {

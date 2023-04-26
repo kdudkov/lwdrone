@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/kdudkov/lwdrone/msg"
 	"os"
 	"strings"
+
+	"github.com/kdudkov/lwdrone/msg"
 )
 
 var gitRevision, gitBranch string
@@ -36,6 +37,7 @@ func main() {
 		}
 		fmt.Printf("version: %s\n", c.Version)
 		fmt.Printf("flash mounted: %d\n", c.SdcMounted)
+		fmt.Printf("cam flip: %d\n", c.Flip)
 		fmt.Printf("flash size: %d MiB\n", c.SdcSize/1024/1024)
 		fmt.Printf("flash free: %d MiB (%.d%%)\n", c.SdcFree/1024/1024, 100.*c.SdcFree/c.SdcSize)
 		fmt.Printf("time: %s\n", c.Time)

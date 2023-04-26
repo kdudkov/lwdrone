@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-const delta = -time.Hour * 5
-
 const (
 	CamUp = iota
 	CamUpMirror
@@ -125,7 +123,7 @@ func (l *Lwdrone) GetTime() (time.Time, error) {
 
 func (l *Lwdrone) SetTime() error {
 	data := make([]byte, 8)
-	binary.LittleEndian.PutUint64(data, uint64(time.Now().Add(delta).Unix()))
+	binary.LittleEndian.PutUint64(data, uint64(time.Now().Unix()))
 	cmd := NewCommand(CmdSettime, data)
 	res, err := l.sendCommand(cmd)
 	if err != nil {
