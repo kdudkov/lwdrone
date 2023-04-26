@@ -1,7 +1,6 @@
 package msg
 
 import (
-	"bufio"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -41,80 +40,85 @@ func NewVideoFrame(u *VideoFrameUnmunger, data []byte) *VideoFrame {
 }
 
 type Streamer struct {
-	host        string
-	port        int
-	connTimeout time.Duration
-	ch          chan *VideoFrame
-	conn        net.Conn
-	frames      int64
+	host           string
+	port           int
+	connectTimeout time.Duration
+	hbTimeout      time.Duration
+	ch             chan *VideoFrame
+	frames         int64
 }
 
-func StartStreamer(host string, port int, cmd *Command) (*Streamer, error) {
+func StartStreamer(host string, port int, startCmd *Command, perm bool) *Streamer {
 	s := &Streamer{
-		host:        host,
-		port:        port,
-		connTimeout: time.Second * 5,
-		ch:          make(chan *VideoFrame, 100),
+		host:           host,
+		port:           port,
+		connectTimeout: time.Second * 3,
+		hbTimeout:      time.Second,
+		ch:             make(chan *VideoFrame, 100),
 	}
 
-	var err error
+	go s.loop(startCmd, perm)
 
-	s.conn, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%d", s.host, s.port), s.connTimeout)
-
-	if err == nil {
-		go s.start(cmd)
-	} else {
-		close(s.ch)
-	}
-	return s, err
+	return s
 }
 
-func (s *Streamer) Stop() {
-
-}
-
-func (s *Streamer) start(startCmd *Command) {
-	hbCmd := NewCommand(CmdHeartbeat, nil).ToByte()
-
-	reader := bufio.NewReader(s.conn)
-	writer := bufio.NewWriter(s.conn)
-
+func (s *Streamer) loop(startCmd *Command, perm bool) {
 	defer close(s.ch)
 
-	lastHb := time.Now()
+	hbCmd := NewCommand(CmdHeartbeat, nil).ToByte()
 	buf := make([]byte, hdrLen)
 
-	_, err := writer.Write(startCmd.ToByte())
-	if err != nil {
-		println(err)
-		return
-	}
+	var conn net.Conn
 
 	for {
-		cmd, err := ReadFrameWithBuf(reader, buf)
+		var err error
+		conn, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%d", s.host, s.port), s.connectTimeout)
 		if err != nil {
-			return
-		}
-
-		if cmd.GetCode() == CmdHeartbeat {
+			time.Sleep(time.Second)
 			continue
 		}
 
-		if cmd.GetCode() == CmdRetreplayend {
-			return
+		lastHb := time.Now()
+
+		_, err = conn.Write(startCmd.ToByte())
+		if err != nil {
+			_ = conn.Close()
+			conn = nil
+			break
 		}
 
-		if len(cmd.body) == 0 {
-			return
+		for {
+			cmd, err := ReadFrameWithBuf(conn, buf)
+			if err != nil {
+				break
+			}
+
+			if cmd.GetCode() == CmdHeartbeat {
+				continue
+			}
+
+			if cmd.GetCode() == CmdRetreplayend {
+				break
+			}
+
+			if len(cmd.body) == 0 {
+				break
+			}
+
+			fu := NewUnmunger(cmd.GetStreamType(), cmd.GetDec1(), cmd.GetDec2())
+
+			s.frames++
+			s.ch <- NewVideoFrame(fu, cmd.body)
+			if time.Now().Sub(lastHb) > s.hbTimeout {
+				lastHb = time.Now()
+				_, _ = conn.Write(hbCmd)
+			}
 		}
 
-		fu := NewUnmunger(cmd.GetStreamType(), cmd.GetDec1(), cmd.GetDec2())
+		_ = conn.Close()
 
-		s.frames++
-		s.ch <- NewVideoFrame(fu, cmd.body)
-		if time.Now().Sub(lastHb) > time.Second {
-			lastHb = time.Now()
-			writer.Write(hbCmd)
+		if !perm {
+			return
 		}
 	}
 }

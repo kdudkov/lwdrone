@@ -160,20 +160,15 @@ func (l *Lwdrone) GetCamFlip(cam int) (int, error) {
 	return res.GetArg(), nil
 }
 
-func (l *Lwdrone) StartStream(hires bool, fl *os.File) error {
+func (l *Lwdrone) StartStream(hires bool, fl *os.File, perm bool) {
 	cmd := NewCommand(CmdStartstream, nil)
 	if hires {
 		cmd.SetArg(1)
 	}
 
-	s, err := StartStreamer(l.host, l.streamPort, cmd)
-	if err != nil {
-		return err
-	}
+	s := StartStreamer(l.host, l.streamPort, cmd, perm)
 
 	for b := range s.ch {
 		fl.Write(b.data)
 	}
-
-	return nil
 }

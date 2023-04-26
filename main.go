@@ -24,6 +24,7 @@ func main() {
 	photo := flag.Bool("photo", false, "take single photo")
 	stream := flag.Bool("stream", false, "start video streaming")
 	hq := flag.Bool("hq", false, "use high quality streaming")
+	perm := flag.Bool("perm", false, "reconnect")
 	fname := flag.String("outfile", "h264out", "output H264 stream file name")
 
 	flag.Parse()
@@ -52,9 +53,7 @@ func main() {
 		} else {
 			f, _ = os.Create(*fname)
 		}
-		if err := drone.StartStream(*hq, f); err != nil {
-			fmt.Println(err)
-		}
+		drone.StartStream(*hq, f, *perm)
 		return
 	}
 
