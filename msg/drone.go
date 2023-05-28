@@ -16,37 +16,37 @@ const (
 )
 
 type Lwdrone struct {
-	host       string
-	cmdPort    int
-	streamPort int
-	timeout    time.Duration
+	host        string
+	cmdPort     int
+	streamPort  int
+	dialTimeout time.Duration
+	connTimeout time.Duration
 }
 
 func NewDrone() *Lwdrone {
 	return &Lwdrone{
-		host:       "192.168.0.1",
-		cmdPort:    8060,
-		streamPort: 7060,
-		timeout:    time.Second * 2,
+		host:        "192.168.0.1",
+		cmdPort:     8060,
+		streamPort:  7060,
+		dialTimeout: time.Second * 2,
+		connTimeout: time.Second * 2,
 	}
 }
 
 func (l *Lwdrone) sendCommand(cmd *Command) (*Command, error) {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", l.host, l.cmdPort), l.timeout)
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", l.host, l.cmdPort), l.dialTimeout)
 
 	if err != nil {
 		return nil, err
 	}
 
 	defer conn.Close()
+	conn.SetDeadline(time.Now().Add(l.connTimeout))
 
-	conn.SetWriteDeadline(time.Now().Add(time.Millisecond * 200))
 	_, err = conn.Write(cmd.ToByte())
 	if err != nil {
 		return nil, err
 	}
-
-	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
 
 	return ReadFrame(conn)
 }
