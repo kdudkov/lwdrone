@@ -8,4 +8,4 @@ based on [meekworth/pylwdrone](https://github.com/meekworth/pylwdrone)
   `./lwdrone -photo`
 
 * stream video to ffplay:
-  `./lwdrone -stream -hq -outfile - | ffplay -i -fflags nobuffer -flags low_delay -probesize 32 -sync ext -`
+  `./lwdrone -stream -hq -outfile - | tee file.ts | ffplay -i -fflags nobuffer -flags low_delay -probesize 32 -sync ext -`

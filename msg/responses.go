@@ -26,7 +26,7 @@ func ConfigFromBytes(data []byte) (*Config, error) {
 	}
 
 	le := binary.LittleEndian
-	c := &Config{}
+	c := new(Config)
 	c.Ch = data[0]
 	c.Flip = data[1]
 	c.WifiSec = data[2]
@@ -89,7 +89,7 @@ func PictureFromBytes(data []byte) (*Picture, error) {
 	}
 	le := binary.LittleEndian
 	n := 0
-	p := &Picture{}
+	p := new(Picture)
 	p.Size = int(le.Uint32(data[n:]))
 	n += 4
 	p.Time = time.UnixMilli(int64(le.Uint32(data[n:])))

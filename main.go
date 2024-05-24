@@ -25,7 +25,7 @@ func main() {
 	stream := flag.Bool("stream", false, "start video streaming")
 	hq := flag.Bool("hq", false, "use high quality streaming")
 	perm := flag.Bool("perm", false, "reconnect")
-	fname := flag.String("outfile", "h264out", "output H264 stream file name")
+	fname := flag.String("outfile", "h264out.ts", "output H264 stream file name")
 
 	flag.Parse()
 

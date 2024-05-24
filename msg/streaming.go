@@ -3,6 +3,7 @@ package msg
 import (
 	"encoding/binary"
 	"fmt"
+	"log/slog"
 	"net"
 	"time"
 )
@@ -40,6 +41,7 @@ func NewVideoFrame(u *VideoFrameUnmunger, data []byte) *VideoFrame {
 }
 
 type Streamer struct {
+	logger         *slog.Logger
 	host           string
 	port           int
 	connectTimeout time.Duration

@@ -27,8 +27,7 @@ func ReadFrameWithBuf(reader io.Reader, hdrBuf []byte) (*Command, error) {
 
 	if cmd.GetSize() > 0 {
 		cmd.body = make([]byte, cmd.GetSize())
-		_, err := io.ReadFull(reader, cmd.body)
-		if err != nil {
+		if _, err := io.ReadFull(reader, cmd.body); err != nil {
 			return cmd, err
 		}
 	}

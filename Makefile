@@ -10,7 +10,8 @@ LDFLAGS=-ldflags "-s -X main.gitRevision=$(GIT_REVISION) -X main.gitBranch=$(GIT
 
 .PHONY: clean
 clean:
-	rm bin/* || true
+	[ -d dist ] || mkdir dist
+	rm dist/* || true
 
 .PHONY: dep
 dep:
@@ -26,10 +27,8 @@ test:
 
 .PHONY: build
 build: clean dep
-	[ -d bin ] || mkdir bin
-	go build $(LDFLAGS) -o bin/ ./
+	go build $(LDFLAGS) -o dist/ ./
 
 .PHONY: gox
 gox: clean dep
-	[ -d bin ] || mkdir bin
-	GOARM=5 gox --osarch="linux/amd64 windows/amd64" -output "bin/{{.Dir}}_{{.OS}}_{{.Arch}}" $(LDFLAGS) ./
+	gox --osarch="linux/amd64 windows/amd64" -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" $(LDFLAGS) ./

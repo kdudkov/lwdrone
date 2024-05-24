@@ -3,8 +3,8 @@ package msg
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
-	"os"
 	"time"
 )
 
@@ -160,7 +160,7 @@ func (l *Lwdrone) GetCamFlip(cam int) (int, error) {
 	return res.GetArg(), nil
 }
 
-func (l *Lwdrone) StartStream(hires bool, fl *os.File, perm bool) {
+func (l *Lwdrone) StartStream(hires bool, fl io.Writer, perm bool) {
 	cmd := NewCommand(CmdStartstream, nil)
 	if hires {
 		cmd.SetArg(1)
